@@ -330,8 +330,8 @@ static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords) 
 				myGelLines.push_back(G_CODE_MARK); // turn on the syringe
 			}
 			else {
-				myGelLines.push_back("G0 X" + to_string(myX[1] + X_OFFSET) + "  Y" + to_string(newY[i] + Y_OFFSET)); // G1 to start the print
-				myGelLines.push_back(G_CODE_MARK); // turn off the syringe
+				myGelLines.push_back("G0 X" + to_string(myX[1] + X_OFFSET) + "  Y" + to_string(newY[i] + Y_OFFSET) + " " + G_CODE_MARK); // G1 to start the print
+				//myGelLines.push_back(G_CODE_MARK); // turn off the syringe
 				myGelLines.push_back(G_CODE_MARK); // reset the syringe
 				// comment 
 			}
@@ -343,17 +343,21 @@ static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords) 
 		//for (double x : myX) cout << x << endl;
 		for (int i = 0; i < newX.size(); i++) { // loop through the entire vector
 			if (i % 2 == 0) {
-				myGelLines.push_back("G0 X" + to_string(newX[i] + X_OFFSET) + "  Y" + to_string(myY[0] + Y_OFFSET)); // need to add the mid point of the Y vals now
+				myGelLines.push_back("G0 X" + to_string(newX[i] + X_OFFSET) + "  Y" + to_string(myY[0] + Y_OFFSET) ); // need to add the mid point of the Y vals now
 				myGelLines.push_back(G_CODE_MARK); // turn on the syringe
 			}
 			else {
-				myGelLines.push_back("G0 X" + to_string(newX[i] + X_OFFSET) + "  Y" + to_string(myY[1] + Y_OFFSET)); // G1 to start the print
-				myGelLines.push_back(G_CODE_MARK); // turn off the syringe
+				myGelLines.push_back("G0 X" + to_string(newX[i] + X_OFFSET) + "  Y" + to_string(myY[1] + Y_OFFSET) + " " + G_CODE_MARK); // G1 to start the print
+				//myGelLines.push_back(G_CODE_MARK); // turn off the syringe
 				myGelLines.push_back(G_CODE_MARK); // reset the syringe
 			}
 		}
 	}
-	myGelLines.pop_back(); // take off the last M400 to make sure the seeding for M400s is correct
+	//myGelLines.pop_back(); // take off the last M400 to make sure the seeding for M400s is correct
+	 if (myGelLines[myGelLines.size() - 2].find(G_CODE_MARK) != string::npos) {
+		 int index = myGelLines[myGelLines.size() - 2].find_last_of(G_CODE_MARK);
+		 myGelLines[myGelLines.size() - 2] = myGelLines[myGelLines.size() - 2].substr(0, index - 4);
+	}
 	myGelLines.pop_back(); // take off the last M400 to make sure the seeding for M400s is correct
 	myGelLines.push_back(";Gel layer added*****************"); // adding comment gcode to find gel gcode
 	myGelLines.push_back(G_CODE_MARK);
