@@ -1,0 +1,7 @@
+﻿  ComplementPiece.cpp
+C:\Users\Sameer Sundrani\Desktop\HybridPiece\ComplementPiece.cpp(88,51): warning C4244:  '=': conversion from 'double' to 'int', possible loss of data
+C:\Users\Sameer Sundrani\Desktop\HybridPiece\ComplementPiece.cpp(283,20): warning C4018:  '<': signed/unsigned mismatch
+C:\Users\Sameer Sundrani\Desktop\HybridPiece\ComplementPiece.cpp(327,21): warning C4018:  '<': signed/unsigned mismatch
+C:\Users\Sameer Sundrani\Desktop\HybridPiece\ComplementPiece.cpp(345,21): warning C4018:  '<': signed/unsigned mismatch
+C:\Users\Sameer Sundrani\Desktop\HybridPiece\ComplementPiece.cpp(345,21): warning C4018: C:\Users\Sameer Sundrani\Desktop\HybridPiece\ComplementPiece.cpp(180) : warning C4715: 'getLayerHeight': not all control paths return a value
+  HybridPiece.vcxproj -> C:\Users\Sameer Sundrani\Desktop\HybridPiece\Debug\HybridPiece.exe

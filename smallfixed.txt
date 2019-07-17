@@ -1,0 +1,179 @@
+;FLAVOR:Marlin
+;TIME:193
+;Filament used: 0.0333236m
+;Layer height: 0.8
+;Generated with Cura_SteamEngine 3.6.0
+M104 S200
+M105
+M109 S200
+M82 ;absolute extrusion mode
+G21 ;metric values
+G90 ;absolute positioning
+M82 ;set extruder to absolute mode
+M107 ;start with the fan off
+G28 ;move XYZ to min endstops
+G1 Z15.0 F9000 ;move the platform down 15mm
+G1 F9000
+;Put printing message on LCD screen
+M117 Printing...
+G92 E0
+G1 F1500 E-6.5
+;LAYER_COUNT:4
+;LAYER:0
+M107
+;MESH:Box_1_testhybrid.stl
+G0 F600 X-6 Y6.09 Z0.2
+;TYPE:FILL
+G1 F1500 E0
+G1 F150 X-6 Y-6.09 E0.18329
+G1 X-5 Y-6.09 E0.19834
+G1 X-5 Y6.09 E0.38163
+G1 X-4 Y6.09 E0.39668
+G1 X-4 Y-6.09 E0.57997
+G1 X-3 Y-6.09 E0.59502
+G1 X-3 Y6.09 E0.77831
+G1 X-2 Y6.09 E0.79335
+G1 X-2 Y-6.09 E0.97664
+G1 X-1 Y-6.09 E0.99169
+G1 X-1 Y6.09 E1.17498
+G1 X0.00 Y6.09 E1.19003
+G1 X0.00 Y-6.09 E1.37332
+G1 X1 Y-6.09 E1.38837
+G1 X1 Y6.09 E1.57166
+G1 X2 Y6.09 E1.58671
+G1 X2 Y-6.09 E1.77
+G1 X3 Y-6.09 E1.78505
+G1 X3 Y6.09 E1.96834
+G1 X4 Y6.09 E1.98339
+G1 X4 Y-6.09 E2.16668
+G1 X5 Y-6.09 E2.18172
+G1 X5 Y6.09 E2.36501
+G1 X6 Y6.09 E2.38006
+G1 X6 Y-6.09 E2.56335
+G0 F600 X5.85 Y-5.85
+;MESH:NONMESH
+G0 X6.09 Y6
+;TIME_ELAPSED:77.659241
+;LAYER:1
+;MESH:Box_1_testhybrid.stl
+G0 F900 X6.09 Y6 Z1
+;TYPE:FILL
+G1 F225 X-6.09 Y6 E3.29651
+G1 X-6.09 Y5 E3.35671
+G1 X6.09 Y5 E4.08987
+G1 X6.09 Y4 E4.15006
+G1 X-6.09 Y3.999 E4.88322
+G1 X-6.09 Y2.999 E4.94341
+G1 X6.09 Y3 E5.67657
+G1 X6.09 Y2 E5.73677
+G1 X-6.09 Y1.999 E6.46993
+G1 X-6.09 Y0.999 E6.53012
+G1 X6.09 Y1 E7.26328
+G1 X6.09 Y0.00 E7.32348
+G1 X-6.09 Y0.00 E8.05664
+G1 X-6.09 Y-1 E8.11683
+G1 X6.09 Y-.999 E8.84999
+G1 X6.09 Y-1.999 E8.91018
+G1 X-6.09 Y-2 E9.64334
+G1 X-6.09 Y-3 E9.70354
+G1 X6.09 Y-2.999 E10.4367
+G1 X6.09 Y-3.999 E10.49689
+G1 X-6.09 Y-4 E11.23005
+G1 X-6.09 Y-5 E11.29025
+G1 X6.09 Y-5 E12.02341
+G1 X6.09 Y-6 E12.0836
+G1 X-6.09 Y-6 E12.81676
+G0 F900 X-5.85 Y-5.85
+;MESH:NONMESH
+G0 X-6 Y6.09
+;TIME_ELAPSED:124.106617
+;LAYER:2
+;MESH:Box_1_testhybrid.stl
+G0 F1200 X-6 Y6.09 Z1.8
+;TYPE:FILL
+G1 F300 X-6 Y-6.09 E13.54992
+G1 X-5 Y-6.09 E13.61011
+G1 X-5 Y6.09 E14.34328
+G1 X-4 Y6.09 E14.40347
+G1 X-4 Y-6.09 E15.13663
+G1 X-3 Y-6.09 E15.19682
+G1 X-3 Y6.09 E15.92998
+G1 X-2 Y6.09 E15.99018
+G1 X-2 Y-6.09 E16.72334
+G1 X-1 Y-6.09 E16.78353
+G1 X-1 Y6.09 E17.51669
+G1 X0.00 Y6.09 E17.57689
+G1 X0.00 Y-6.09 E18.31005
+G1 X1 Y-6.09 E18.37024
+G1 X1 Y6.09 E19.1034
+G1 X2 Y6.09 E19.16359
+G1 X2 Y-6.09 E19.89675
+G1 X3 Y-6.09 E19.95695
+G1 X3 Y6.09 E20.69011
+G1 X4 Y6.09 E20.7503
+G1 X4 Y-6.09 E21.48346
+G1 X5 Y-6.09 E21.54366
+G1 X5 Y6.09 E22.27682
+G1 X6 Y6.09 E22.33701
+G1 X6 Y-6.09 E23.07017
+G0 F1200 X5.85 Y-5.85
+;MESH:NONMESH
+G0 X6.09 Y6
+;TIME_ELAPSED:158.990013
+;LAYER:3
+;MESH:Box_1_testhybrid.stl
+G0 X6.09 Y6 Z2.6
+;TYPE:FILL
+G1 F300 X-6.09 Y6 E23.80333
+G1 X-6.09 Y5 E23.86352
+G1 X6.09 Y5 E24.59668
+G1 X6.09 Y4 E24.65688
+G1 X-6.09 Y3.999 E25.39004
+G1 X-6.09 Y2.999 E25.45023
+G1 X6.09 Y3 E26.18339
+G1 X6.09 Y2 E26.24359
+G1 X-6.09 Y1.999 E26.97675
+G1 X-6.09 Y0.999 E27.03694
+G1 X6.09 Y1 E27.7701
+G1 X6.09 Y0.00 E27.83029
+G1 X-6.09 Y0.00 E28.56345
+G1 X-6.09 Y-1 E28.62365
+G1 X6.09 Y-.999 E29.35681
+G1 X6.09 Y-1.999 E29.417
+G1 X-6.09 Y-2 E30.15016
+G1 X-6.09 Y-3 E30.21036
+G1 X6.09 Y-2.999 E30.94352
+G1 X6.09 Y-3.999 E31.00371
+G1 X-6.09 Y-4 E31.73687
+G1 X-6.09 Y-5 E31.79706
+G1 X6.09 Y-5 E32.53022
+G1 X6.09 Y-6 E32.59042
+G1 X-6.09 Y-6 E33.32358
+G0 F1200 X-5.85 Y-5.85
+;TIME_ELAPSED:193.280788
+G1 F1500 E26.82358
+M140 S0
+M104 S0 ;extruder heater off
+M140 S0 ;heated bed heater off (if you have it)
+G91 ;relative positioning
+G1 E-1 F300  ;retract the filament a bit before lifting the nozzle, to release some of the pressure
+G1 Z+0.5 E-5 X-20 Y-20 F9000 ;move Z up a bit and retract filament even more
+G28 X0 Y0 ;move X/Y to min endstops, so the head is out of the way
+M84 ;steppers off
+G90 ;absolute positioning
+M82 ;absolute extrusion mode
+M104 S0
+;End of Gcode
+;SETTING_3 {"global_quality": "[general]\\nversion = 4\\nname = Carolyn - Syring
+;SETTING_3 e\\ndefinition = fdmprinter\\n\\n[metadata]\\nsetting_version = 5\\nt
+;SETTING_3 ype = quality_changes\\nquality_type = verydraft\\n\\n[values]\\nadhe
+;SETTING_3 sion_type = none\\nlayer_height = 0.8\\nlayer_height_0 = 0.2\\nmateri
+;SETTING_3 al_bed_temperature = 0\\nsupport_enable = False\\n\\n", "extruder_qua
+;SETTING_3 lity": ["[general]\\nversion = 4\\nname = Carolyn - Syringe\\ndefinit
+;SETTING_3 ion = fdmprinter\\n\\n[metadata]\\nposition = 0\\nsetting_version = 5
+;SETTING_3 \\ntype = quality_changes\\nquality_type = verydraft\\n\\n[values]\\n
+;SETTING_3 brim_width = 0\\ncool_fan_enabled = False\\ninfill_angles = [0,90]\\n
+;SETTING_3 infill_line_distance = 1\\ninfill_pattern = zigzag\\ninfill_sparse_de
+;SETTING_3 nsity = 70\\nmaterial_flow = 120\\nskirt_line_count = 2\\nspeed_print
+;SETTING_3  = 5\\nspeed_travel = 20\\ntop_bottom_thickness = 0.0\\nwall_thicknes
+;SETTING_3 s = 0.0\\n\\n"]}
