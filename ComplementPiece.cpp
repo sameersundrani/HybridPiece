@@ -326,7 +326,8 @@ static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords) 
 		//for (double d : newY) cout << d << endl; // print the new Y to check
 		for (int i = 0; i < newY.size(); i++) { // loop through the entire vector, print left to right
 			if (i % 2 == 0) {
-				myGelLines.push_back("G0 X" + to_string(myX[0] + X_OFFSET) + "  Y" + to_string(newY[i] + Y_OFFSET));
+				if (i == 0) myGelLines.push_back("G0 F450 X" + to_string(myX[0] + X_OFFSET) + "  Y" + to_string(newY[i] + Y_OFFSET)); // set speed at first line
+				else myGelLines.push_back("G0 X" + to_string(myX[0] + X_OFFSET) + "  Y" + to_string(newY[i] + Y_OFFSET));
 				myGelLines.push_back(G_CODE_MARK); // turn on the syringe
 			}
 			else {
@@ -343,7 +344,8 @@ static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords) 
 		//for (double x : myX) cout << x << endl;
 		for (int i = 0; i < newX.size(); i++) { // loop through the entire vector
 			if (i % 2 == 0) {
-				myGelLines.push_back("G0 X" + to_string(newX[i] + X_OFFSET) + "  Y" + to_string(myY[0] + Y_OFFSET) ); // need to add the mid point of the Y vals now
+				if (i == 0) myGelLines.push_back("G0 F450 X" + to_string(newX[i] + X_OFFSET) + "  Y" + to_string(myY[0] + Y_OFFSET)); // set speed at first line
+				else myGelLines.push_back("G0 X" + to_string(newX[i] + X_OFFSET) + "  Y" + to_string(myY[0] + Y_OFFSET)); // need to add the mid point of the Y vals now
 				myGelLines.push_back(G_CODE_MARK); // turn on the syringe
 			}
 			else {
