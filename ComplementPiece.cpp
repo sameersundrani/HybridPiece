@@ -30,7 +30,11 @@ static const string OUTPUT_PROMPT = "Please give a name for output Gcode file wi
 static const string SENTINEL = ";LAYER:1"; //LAYER:1 with skirt  // or layer 0 for no skirt but print is not clean without skirt
 static const double HEIGHT_INCREMENT = 0.2;  // this is for PLA; we made the Cura height setting for gel to be 0.8
 static const string G_CODE_MARK = "M400";
+<<<<<<< HEAD
 static const string LAYER_MARKER = ";MESH:CylinderComplement.stl";//;MESH:Box_1_testhybrid.stl";//";MESH:rectangle_w_hole.STL"; //;MESH:rigid.STL // need to change somehow
+=======
+static const string LAYER_MARKER = ";MESH:CylinderComplement.stl"; //;MESH:Box_1_testhybrid.stl";//";MESH:rectangle_w_hole.STL"; //;MESH:rigid.STL // need to change somehow
+>>>>>>> 6505b6998790c18eb8e218598e914dd0ba168a9a
 static const string HEATER_OFF = "M104 S0 ;extruder heater off";
 static const double X_OFFSET = -49.85;  // changed from -48.2 -> -49.87
 static const double Y_OFFSET = -24.25;  // changed from -26.7 -> -25.03
@@ -71,7 +75,12 @@ static vector<tuple<double, double>> getCoords(vector<string>& layer);
 static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords);
 
 //Method:     getNewCoord, depending on the layer direction, will get the new coords needed to add
-static vector<double> getNewCoord(vector<double>& prevCoords);
+static vector<tuple<double, double>> getNewCoord(vector<tuple<double, double>>, bool myLayerDirection);
+
+static double getXTuple(tuple<double, double> myTuple);
+static double getMid(double val1, double val2);
+static double getYTuple(tuple<double, double> myTuple);
+
 
 //Method:     addGelLayers, will combine previous methods and then output to the gcode file
 static void addGelLayers(vector<string>& oneLayer, ofstream& output);
@@ -92,7 +101,6 @@ int main() {
 		while (getline(inputGCode, line)) {
 			if (line == LAYER_MARKER) {
 				flag = 1;							// 1: beginning of print layer
-				//oneLayer.push_back(line);
 			}
 			else if (((firstTwoCh(line) == "G0") && (flag == 1)) || (firstTwoCh(line) == "G1" && (flag == 0))) {
 				oneLayer.push_back(line);
@@ -113,7 +121,8 @@ int main() {
 				//	for (string line : stringCoords) cout << line << endl;
 				//	//break;
 				//}
-				addGelLayers(oneLayer, outputGCode); 
+				// for testing
+				addGelLayers(oneLayer, outputGCode);
 				oneLayer.clear();
 				flag = -1;							// -1: misc. G and M codes in between print layers
 			}
@@ -272,20 +281,55 @@ static void copyToEnd(ifstream& input, ofstream& output) {
 static bool getLayerDir(vector<double>& myX, vector<double>& myY) {
 	double second = myX[1];
 	double first = myX[0];
-	if (-1 * first != -1 * second) return true; // horizontal, this means that the first two X vals are not the same indicating it is NOT vertical
-	else return false; // vertical
+	if (-1 * first != -1 * second) {
+		//cout << "HORIZONTAL LAYER\n";
+		return true;// horizontal, this means that the first two X vals are not the same indicating it is NOT vertical
+	}
+	else {
+		//cout << "VERTICAL LAYER\n";
+		return false; // vertical
+	}
 }
 
-static vector<double> getNewCoord(vector<double>& prevCoords) {
-	double prev = prevCoords[0]; // init to 0 val
-	double curr = 0.0; // init to 0
-	vector<double> newCoords;
-	for (int i = 1; i < prevCoords.size(); i++) {
-		prev = prevCoords[i - 1];
-		curr = prevCoords[i];
-		if (prev != curr) {
-			for (int i = 0; i < 2; i++) newCoords.push_back((prev + curr) / 2.0); // push back twice so that we can have an even number of moves
+static vector<tuple<double, double>> getNewCoord(vector<tuple<double, double>> prevCoords, bool myLayerDirection) {
+	double prevX = getXTuple(prevCoords[0]);
+	double prevY = getYTuple(prevCoords[0]); // init to 0 val
+	vector<tuple<double, double>> myPts; // init to 0, need to keep track of 4 points
+	double currX, currY, diff = 0.0; // init to 0
+	vector<tuple<double, double>> newCoords;
+	for (int i = 1; i < prevCoords.size(); i++) { // iterate through entire vector oif tuples
+		currX = getXTuple(prevCoords[i]); 
+		currY = getYTuple(prevCoords[i]);
+		if (myLayerDirection) diff = currY - prevY; // if horizontal, check diff between consecutive y vals
+		else diff = currX - prevX;
+		if (abs(diff) <= 0.002) { // looking for a basically straight line, range is normally [0, 0.001]
+			//cout << "My diff is " << diff << " I FOUND A LINE!!!" << endl; 
+			if (myPts.size() == 4) { // check to see if we need to add a new Coord
+				//start with mid of 1 and 2 
+				double midXStart = getMid(getXTuple(myPts[1]), getXTuple(myPts[2]));
+				double midYStart = getMid(getYTuple(myPts[1]), getYTuple(myPts[2]));
+				newCoords.push_back(make_tuple(midXStart, midYStart));
+				// end with mid of 0 and 3
+				double midXEnd = getMid(getXTuple(myPts[0]), getXTuple(myPts[3]));
+				double midYEnd = getMid(getYTuple(myPts[0]), getYTuple(myPts[3]));
+				newCoords.push_back(make_tuple(midXEnd, midYEnd));
+				myPts.erase(myPts.begin(), myPts.begin() + 2); // delete first two points
+			}
+			myPts.push_back(make_tuple(prevX, prevY));
+			myPts.push_back(make_tuple(currX, currY));
 		}
+		prevX = currX;
+		prevY = currY;
+	}
+	if (myPts.size() == 4) { // do again just to get last line, bc loop finishes before we can check one more time
+				//start with mid of 1 and 2 
+		double midXStart = getMid(getXTuple(myPts[1]), getXTuple(myPts[2]));
+		double midYStart = getMid(getYTuple(myPts[1]), getYTuple(myPts[2]));
+		newCoords.push_back(make_tuple(midXStart, midYStart));
+		// end with mid of 0 and 3
+		double midXEnd = getMid(getXTuple(myPts[0]), getXTuple(myPts[3]));
+		double midYEnd = getMid(getYTuple(myPts[0]), getYTuple(myPts[3]));
+		newCoords.push_back(make_tuple(midXEnd, midYEnd));
 	}
 	return newCoords;
 }
@@ -320,7 +364,28 @@ static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords) 
 		// need to figure out the horizontal then the mid points and the starting point
 	}
 	bool isHoriz = getLayerDir(myX, myY); // true if horizontal, false if vertical (where to look for midpoints and what to keep the same for lengths
-	if (isHoriz) {
+	vector<tuple<double, double>> gelCoordinates = getNewCoord(myCoords, isHoriz);
+	for (int i = 0; i < gelCoordinates.size(); i++) { // add to myGelLines, printing left
+		if (i % 2 == 0) {
+			if (i == 0) myGelLines.push_back("G0 F450 X" + to_string(getXTuple(gelCoordinates[i]) + X_OFFSET) + " Y" + to_string(getYTuple(gelCoordinates[i]) + Y_OFFSET));
+			else myGelLines.push_back("G0 X" + to_string(getXTuple(gelCoordinates[i]) + X_OFFSET) + " Y" + to_string(getYTuple(gelCoordinates[i]) + Y_OFFSET));
+			myGelLines.push_back(G_CODE_MARK);
+		}
+		else {
+			myGelLines.push_back("G0 X" + to_string(getXTuple(gelCoordinates[i]) + X_OFFSET) + " Y" + to_string(getYTuple(gelCoordinates[i]) + Y_OFFSET) + " " + G_CODE_MARK);
+			myGelLines.push_back(G_CODE_MARK);
+		}
+	}
+	// edit for the last lines in layer
+	if (myGelLines[myGelLines.size() - 2].find(G_CODE_MARK) != string::npos) {
+		int index = myGelLines[myGelLines.size() - 2].find_last_of(G_CODE_MARK);
+		myGelLines[myGelLines.size() - 2] = myGelLines[myGelLines.size() - 2].substr(0, index - 4);
+	}
+	myGelLines.pop_back(); // take off the last M400 to make sure the seeding for M400s is correct
+	myGelLines.push_back(";Gel layer added*****************"); // adding comment gcode to find gel gcode
+	myGelLines.push_back(G_CODE_MARK);
+	//cout << boolalpha << isHoriz << endl; // display layer direction
+	/*if (isHoriz) {
 		// horizontal layer
 		vector<double> newY = getNewCoord(myY); // need to get the mid point y vals
 		//for (double d : newY) cout << d << endl; // print the new Y to check
@@ -334,7 +399,7 @@ static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords) 
 				myGelLines.push_back("G0 X" + to_string(myX[1] + X_OFFSET) + "  Y" + to_string(newY[i] + Y_OFFSET) + " " + G_CODE_MARK); // G1 to start the print
 				//myGelLines.push_back(G_CODE_MARK); // turn off the syringe
 				myGelLines.push_back(G_CODE_MARK); // reset the syringe
-				// comment 
+				// comment
 			}
 		}
 	}
@@ -355,6 +420,7 @@ static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords) 
 			}
 		}
 	}
+
 	//myGelLines.pop_back(); // take off the last M400 to make sure the seeding for M400s is correct
 	 if (myGelLines[myGelLines.size() - 2].find(G_CODE_MARK) != string::npos) {
 		 int index = myGelLines[myGelLines.size() - 2].find_last_of(G_CODE_MARK);
@@ -363,7 +429,28 @@ static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords) 
 	myGelLines.pop_back(); // take off the last M400 to make sure the seeding for M400s is correct
 	myGelLines.push_back(";Gel layer added*****************"); // adding comment gcode to find gel gcode
 	myGelLines.push_back(G_CODE_MARK);
+	*/
+	/*cout << "My X is : \n";
+	for (int i = 0; i < gelCoordinates.size(); i++) {
+		cout << getXTuple(gelCoordinates[i]) << endl;
+	}
+	cout << "My Y is : \n";
+	for (int i = 0; i < gelCoordinates.size(); i++) {
+		cout << getYTuple(gelCoordinates[i]) << endl;
+	}*/
 	return myGelLines;
+}
+
+static double getXTuple(tuple<double, double> myTuple){
+	return get<0>(myTuple);
+}
+
+static double getYTuple(tuple<double, double> myTuple) {
+	return get<1>(myTuple);
+}
+
+static double getMid(double val1, double val2) {
+	return ((val1 + val2) / 2.0);
 }
 
 static void addGelLayers(vector<string>& oneLayer, ofstream& output) {
@@ -372,6 +459,3 @@ static void addGelLayers(vector<string>& oneLayer, ofstream& output) {
 	for (string line : stringCoords) output << line << endl;
 }
 
-static void testFxn() {
-	if (true) return;
-}
