@@ -30,11 +30,7 @@ static const string OUTPUT_PROMPT = "Please give a name for output Gcode file wi
 static const string SENTINEL = ";LAYER:1"; //LAYER:1 with skirt  // or layer 0 for no skirt but print is not clean without skirt
 static const double HEIGHT_INCREMENT = 0.2;  // this is for PLA; we made the Cura height setting for gel to be 0.8
 static const string G_CODE_MARK = "M400";
-<<<<<<< HEAD
-static const string LAYER_MARKER = ";MESH:CylinderComplement.stl";//;MESH:Box_1_testhybrid.stl";//";MESH:rectangle_w_hole.STL"; //;MESH:rigid.STL // need to change somehow
-=======
-static const string LAYER_MARKER = ";MESH:CylinderComplement.stl"; //;MESH:Box_1_testhybrid.stl";//";MESH:rectangle_w_hole.STL"; //;MESH:rigid.STL // need to change somehow
->>>>>>> 6505b6998790c18eb8e218598e914dd0ba168a9a
+static const string LAYER_MARKER = ";MESH:circle.stl";//";MESH:CylinderComplement.stl"; //;MESH:Box_1_testhybrid.stl";//";MESH:rectangle_w_hole.STL"; //;MESH:rigid.STL // need to change somehow
 static const string HEATER_OFF = "M104 S0 ;extruder heater off";
 static const double X_OFFSET = -49.85;  // changed from -48.2 -> -49.87
 static const double Y_OFFSET = -24.25;  // changed from -26.7 -> -25.03
@@ -94,24 +90,29 @@ int main() {
 	copyTillSentinel(inputGCode, outputGCode); // output everything until layer 1
 	int flag = 0;									// flag is to indicate beginning of each print layer, init at 0
 	vector<string> oneLayer;						// a vector to hold each print line beginning with G0 or G1
-	NUM_OF_COPIES = (layerHeight / HEIGHT_INCREMENT) - 1;
+	NUM_OF_COPIES = (layerHeight * 10 / 2) - 1;
 	cout << "I am making " << NUM_OF_COPIES << " number of copies" << endl;
 	if (inputGCode.is_open()) {
 		string line;
+		string prevLine = "";
 		while (getline(inputGCode, line)) {
 			if (line == LAYER_MARKER) {
 				flag = 1;							// 1: beginning of print layer
 			}
-			else if (((firstTwoCh(line) == "G0") && (flag == 1)) || (firstTwoCh(line) == "G1" && (flag == 0))) {
+			else if (((firstTwoCh(line) == "G0") && (flag == 1)) || (firstTwoCh(line) == "G1" && (flag == 0)) || (firstTwoCh(line) == "G0" && prevLine != ";MESH:NONMESH")) {
 				oneLayer.push_back(line);
 				flag = 0;							// 0: end of print layer
 			}
-			else if (firstTwoCh(line) == "G0" && (flag == 0)) {
+			else if (firstTwoCh(line) == "G0" && (flag == 0) && prevLine == ";MESH:NONMESH") {
 				oneLayer.push_back(line);
 				findExtrusions(oneLayer); // get delta Extrusion (E0-2) values 
 				addMultipleLayers(oneLayer, outputGCode); // output repeated NUM_OF_COPIES Variables 
 				/*if (true) for (auto line : oneLayer) cout << line << endl;
 				break;*/
+				/*if (true) {
+					for (string s : oneLayer) cout << s << endl;
+					break;
+				}*/
 				// do my gel code here 
 				//if (true) getCoords(oneLayer);
 				//break;
@@ -123,6 +124,8 @@ int main() {
 				//}
 				// for testing
 				addGelLayers(oneLayer, outputGCode);
+				//uncomment next line for testing purposes
+				//if (true) break;
 				oneLayer.clear();
 				flag = -1;							// -1: misc. G and M codes in between print layers
 			}
@@ -133,6 +136,7 @@ int main() {
 				copyToEnd(inputGCode, outputGCode);
 				break;
 			}
+			prevLine = line;
 		}
 		inputGCode.close();
 	}
@@ -176,7 +180,8 @@ static double getLayerHeight() { // tested, works
 			throw exception();
 		}
 		else {
-			while (fmod(stod(height), 0.2) != 0) {
+			while (fmod(stod(height) * 10, 2) != 0) {
+				cout << fmod(stod(height), 0.2) << endl << stod(height) / 0.2 << endl;
 				cout << "That Layer Height is No Good :( \n" << INPUT_LAYER_HEIGHT_PROMPT;
 				getline(cin, height);
 			}
@@ -189,6 +194,7 @@ static double getLayerHeight() { // tested, works
 }
 
 static void findExtrusions(vector<string>& aLayer) {
+	//cout << "My Size: " << aLayer.size() << endl;
 	for (int i = 1; i <= 3; i++) {
 		string line = aLayer.at(i);
 		int E_loc = line.find_last_of("E");
@@ -224,27 +230,34 @@ static void addMultipleLayers(vector<string>& aLayer, ofstream& output) {
 		for (int j = 1; j < layerSize - 1; j++) {
 			string line = aLayer.at(j);
 			// find E location
-			int E_loc = line.find_last_of("E");
-			// get substring to E  
-			string coord = line.substr(0, E_loc + 1);
-			if (j == 1 && i == 0) {
-				double extrusion = stod(line.substr(E_loc + 1));
-				extrusion = extrusion - E_last;
-				absExtrusion = absExtrusion + extrusion;
-			}
-			else {
-				if (j % 2 == 0) {
-					absExtrusion = absExtrusion + extrusionA;
+			if (firstTwoCh(line) != "G0") {
+				int E_loc = line.find_last_of("E");
+				// get substring to E  
+				string coord = line.substr(0, E_loc + 1);
+				if (j == 1 && i == 0) {
+					double extrusion = stod(line.substr(E_loc + 1));
+					extrusion = extrusion - E_last;
+					absExtrusion = absExtrusion + extrusion;
 				}
 				else {
-					absExtrusion = absExtrusion + extrusionB;
+					if (j % 2 == 0) {
+						absExtrusion = absExtrusion + extrusionA;
+					}
+					else {
+						absExtrusion = absExtrusion + extrusionB;
+					}
 				}
+				string extrusionVal = to_string(absExtrusion);
+				string outputLine = coord + extrusionVal;
+				output << outputLine << endl;
 			}
-			string extrusionVal = to_string(absExtrusion);
-			string outputLine = coord + extrusionVal;
-			output << outputLine << endl;
+			else {
+				output << line << endl;
+			}
 			if (j == aLayer.size() - 2 && i == 0) {
+				if (firstTwoCh(aLayer.at(aLayer.size() - 2)) != "G0") {
 				updateE_last(aLayer.at(aLayer.size() - 2));
+				}
 			}
 		}
 		output << aLayer.at(aLayer.size() - 1) << endl;
@@ -298,7 +311,7 @@ static vector<tuple<double, double>> getNewCoord(vector<tuple<double, double>> p
 	double currX, currY, diff = 0.0; // init to 0
 	vector<tuple<double, double>> newCoords;
 	for (int i = 1; i < prevCoords.size(); i++) { // iterate through entire vector oif tuples
-		currX = getXTuple(prevCoords[i]); 
+		currX = getXTuple(prevCoords[i]);
 		currY = getYTuple(prevCoords[i]);
 		if (myLayerDirection) diff = currY - prevY; // if horizontal, check diff between consecutive y vals
 		else diff = currX - prevX;
@@ -340,8 +353,8 @@ static vector<tuple<double, double>> getCoords(vector<string>& layer) {
 	smatch xyVals;
 	for (string gLine : layer) {
 		if (regex_search(gLine, xyVals, findCoords)) {
-			/*cout << "My X : ";
-			cout << matchX.str(1) << endl;*/
+			/*cout << "My X : ";*/
+			//cout << xyVals.str(1) << endl;
 			double xCoord = stod(xyVals.str(1)); // extract the xCoord
 			//cout << xCoord << endl;  
 			double yCoord = stod(xyVals.str(2)); // extract the yCoord
@@ -365,6 +378,16 @@ static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords) 
 	}
 	bool isHoriz = getLayerDir(myX, myY); // true if horizontal, false if vertical (where to look for midpoints and what to keep the same for lengths
 	vector<tuple<double, double>> gelCoordinates = getNewCoord(myCoords, isHoriz);
+	// print code to graph
+	cout << "My New Xs are : \n";
+	for (tuple<double, double> xy : gelCoordinates) {
+		cout << getXTuple(xy) << endl;
+	}
+	cout << "My New Ys are : \n";
+	for (tuple<double, double> xy : gelCoordinates) {
+		cout << getYTuple(xy) << endl;
+	}
+	// end print code to graph
 	for (int i = 0; i < gelCoordinates.size(); i++) { // add to myGelLines, printing left
 		if (i % 2 == 0) {
 			if (i == 0) myGelLines.push_back("G0 F450 X" + to_string(getXTuple(gelCoordinates[i]) + X_OFFSET) + " Y" + to_string(getYTuple(gelCoordinates[i]) + Y_OFFSET));
@@ -372,64 +395,20 @@ static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords) 
 			myGelLines.push_back(G_CODE_MARK);
 		}
 		else {
-			myGelLines.push_back("G0 X" + to_string(getXTuple(gelCoordinates[i]) + X_OFFSET) + " Y" + to_string(getYTuple(gelCoordinates[i]) + Y_OFFSET) + " " + G_CODE_MARK);
+			myGelLines.push_back("G0 X" + to_string(getXTuple(gelCoordinates[i]) + X_OFFSET) + " Y" + to_string(getYTuple(gelCoordinates[i]) + Y_OFFSET));
+			myGelLines.push_back(G_CODE_MARK);
 			myGelLines.push_back(G_CODE_MARK);
 		}
 	}
 	// edit for the last lines in layer
-	if (myGelLines[myGelLines.size() - 2].find(G_CODE_MARK) != string::npos) {
+	/*if (myGelLines[myGelLines.size() - 2].find(G_CODE_MARK) != string::npos) {
 		int index = myGelLines[myGelLines.size() - 2].find_last_of(G_CODE_MARK);
 		myGelLines[myGelLines.size() - 2] = myGelLines[myGelLines.size() - 2].substr(0, index - 4);
-	}
+	}*/
+	myGelLines.pop_back();
 	myGelLines.pop_back(); // take off the last M400 to make sure the seeding for M400s is correct
 	myGelLines.push_back(";Gel layer added*****************"); // adding comment gcode to find gel gcode
 	myGelLines.push_back(G_CODE_MARK);
-	//cout << boolalpha << isHoriz << endl; // display layer direction
-	/*if (isHoriz) {
-		// horizontal layer
-		vector<double> newY = getNewCoord(myY); // need to get the mid point y vals
-		//for (double d : newY) cout << d << endl; // print the new Y to check
-		for (int i = 0; i < newY.size(); i++) { // loop through the entire vector, print left to right
-			if (i % 2 == 0) {
-				if (i == 0) myGelLines.push_back("G0 F450 X" + to_string(myX[0] + X_OFFSET) + "  Y" + to_string(newY[i] + Y_OFFSET)); // set speed at first line
-				else myGelLines.push_back("G0 X" + to_string(myX[0] + X_OFFSET) + "  Y" + to_string(newY[i] + Y_OFFSET));
-				myGelLines.push_back(G_CODE_MARK); // turn on the syringe
-			}
-			else {
-				myGelLines.push_back("G0 X" + to_string(myX[1] + X_OFFSET) + "  Y" + to_string(newY[i] + Y_OFFSET) + " " + G_CODE_MARK); // G1 to start the print
-				//myGelLines.push_back(G_CODE_MARK); // turn off the syringe
-				myGelLines.push_back(G_CODE_MARK); // reset the syringe
-				// comment
-			}
-		}
-	}
-	else { // vertical layer
-		//cout << isHoriz << endl;
-		vector<double> newX = getNewCoord(myX); // need to get the mid point x vals
-		//for (double x : myX) cout << x << endl;
-		for (int i = 0; i < newX.size(); i++) { // loop through the entire vector
-			if (i % 2 == 0) {
-				if (i == 0) myGelLines.push_back("G0 F450 X" + to_string(newX[i] + X_OFFSET) + "  Y" + to_string(myY[0] + Y_OFFSET)); // set speed at first line
-				else myGelLines.push_back("G0 X" + to_string(newX[i] + X_OFFSET) + "  Y" + to_string(myY[0] + Y_OFFSET)); // need to add the mid point of the Y vals now
-				myGelLines.push_back(G_CODE_MARK); // turn on the syringe
-			}
-			else {
-				myGelLines.push_back("G0 X" + to_string(newX[i] + X_OFFSET) + "  Y" + to_string(myY[1] + Y_OFFSET) + " " + G_CODE_MARK); // G1 to start the print
-				//myGelLines.push_back(G_CODE_MARK); // turn off the syringe
-				myGelLines.push_back(G_CODE_MARK); // reset the syringe
-			}
-		}
-	}
-
-	//myGelLines.pop_back(); // take off the last M400 to make sure the seeding for M400s is correct
-	 if (myGelLines[myGelLines.size() - 2].find(G_CODE_MARK) != string::npos) {
-		 int index = myGelLines[myGelLines.size() - 2].find_last_of(G_CODE_MARK);
-		 myGelLines[myGelLines.size() - 2] = myGelLines[myGelLines.size() - 2].substr(0, index - 4);
-	}
-	myGelLines.pop_back(); // take off the last M400 to make sure the seeding for M400s is correct
-	myGelLines.push_back(";Gel layer added*****************"); // adding comment gcode to find gel gcode
-	myGelLines.push_back(G_CODE_MARK);
-	*/
 	/*cout << "My X is : \n";
 	for (int i = 0; i < gelCoordinates.size(); i++) {
 		cout << getXTuple(gelCoordinates[i]) << endl;
@@ -441,7 +420,7 @@ static vector<string> getGelLayerLines(vector<tuple<double, double>>& myCoords) 
 	return myGelLines;
 }
 
-static double getXTuple(tuple<double, double> myTuple){
+static double getXTuple(tuple<double, double> myTuple) {
 	return get<0>(myTuple);
 }
 
@@ -455,6 +434,14 @@ static double getMid(double val1, double val2) {
 
 static void addGelLayers(vector<string>& oneLayer, ofstream& output) {
 	vector<tuple<double, double>> tupleCoords = getCoords(oneLayer);
+	cout << "My Xs are : \n";
+	for (tuple<double, double> xy : tupleCoords) {
+		cout << getXTuple(xy) << endl;
+	}
+	cout << "My Ys are : \n";
+	for (tuple<double, double> xy : tupleCoords) {
+		cout << getYTuple(xy) << endl;
+	}
 	vector<string> stringCoords = getGelLayerLines(tupleCoords);
 	for (string line : stringCoords) output << line << endl;
 }
